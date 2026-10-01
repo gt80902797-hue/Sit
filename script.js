@@ -506,15 +506,32 @@ window.logoutAdmin = function() {
   window.lockAdminHub();
 };
 
-window.approveOrderbyAdmin = function(code) {
+window.approveOrderbyAdmin = async function(code) {
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .update({
+      admin_approved: true,
+      status: "Active Order (Approved)"
+    })
+    .eq("code", code)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Admin approval error:", error);
+    alert("Order approve nahi hua: " + error.message);
+    return;
+  }
+
   const index = window.globalOrders.findIndex(o => o.code === code);
+
   if (index !== -1) {
     window.globalOrders[index].adminApproved = true;
     window.globalOrders[index].status = "Active Order (Approved)";
-    localStorage.setItem("assignmate_master_orders", JSON.stringify(window.globalOrders));
-    alert("Order " + code + " Approved! Ab ye Writer Marketplace mein sabko dikhega.");
-    window.renderAdminMaster();
   }
+
+  alert("Order " + code + " Approved! Ab ye Writer Marketplace mein sabko dikhega.");
+  window.renderAdminMaster();
 };
 
 window.renderAdminMaster = function() {
