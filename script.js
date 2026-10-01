@@ -159,17 +159,17 @@ window.verifyWriterOTP = function() {
     alert("Galat OTP! Kripya sahi code enter karein.");
   }
 };
-
-window.createStudentOrder = function(e) {
+window.createStudentOrder = async function(e) {
   if (e) e.preventDefault();
 
-  const topic = document.getElementById("orderTopic").value;
+  const topic = document.getElementById("orderTopic").value.trim();
   const pages = parseInt(document.getElementById("orderPages").value);
-  const location = document.getElementById("studentLoc").value;
+  const location = document.getElementById("studentLoc").value.trim();
   const utr = document.getElementById("orderUTR").value.trim();
 
   const totalPrice = pages * window.STUDENT_RATE_PER_PAGE;
   const writerPayoutAmount = pages * window.WRITER_RATE_PER_PAGE;
+
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   const orderCode = "AM" + randomNum;
 
@@ -178,24 +178,36 @@ window.createStudentOrder = function(e) {
 
   const newOrder = {
     code: orderCode,
-    secretUniqueCode: exactUniqueCode,
-    studentPhone: window.activeStudentPhone,
-    studentLocation: location,
+    secret_unique_code: exactUniqueCode,
+    student_phone: window.activeStudentPhone,
+    student_location: location,
     topic: topic,
     pages: pages,
-    studentPaid: totalPrice,
-    writerPayout: writerPayoutAmount,
+    student_paid: totalPrice,
+    writer_payout: writerPayoutAmount,
     utr: utr,
-    writerDetails: null,
-    status: "Pending Admin Approval", 
-    adminApproved: false,
-    studentApproved: false,
-    payoutClaimed: false
+    status: "Pending Admin Approval",
+    admin_approved: false,
+    student_approved: false,
+    payout_claimed: false
   };
 
-  window.globalOrders.push(newOrder);
-  localStorage.setItem("assignmate_master_orders", JSON.stringify(window.globalOrders));
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .insert([newOrder])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Order save error:", error);
+    alert("Order save nahi hua: " + error.message);
+    return;
+  }
+
+  window.globalOrders.unshift(data);
   window.renderStudentOrders();
+
+  alert("Order successfully submit ho gaya!");
 
   const msg = "Hello Admin, Maine Naya Order Request Submit Kiya Hai:%0A%0A" +
     "*Order Code:* " + orderCode + "%0A" +
@@ -207,7 +219,10 @@ window.createStudentOrder = function(e) {
     "*Student Mobile:* " + window.activeStudentPhone + "%0A%0A" +
     "Kripya Payment Verify Karke Order Approve Karein.";
 
-  window.open("https://wa.me/" + window.ADMIN_WHATSAPP + "?text=" + msg, '_blank');
+  window.open(
+    "https://wa.me/" + window.ADMIN_WHATSAPP + "?text=" + msg,
+    "_blank"
+  );
 };
 
 window.renderStudentOrders = function() {
