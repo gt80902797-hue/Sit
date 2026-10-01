@@ -24,7 +24,32 @@ async function loadOrdersFromSupabase() {
     return;
   }
 
-  window.globalOrders = data || [];
+window.globalOrders = (data || []).map(o => ({
+  id: o.id,
+  code: o.code,
+  secretUniqueCode: o.secret_unique_code,
+  studentPhone: o.student_phone,
+  studentLocation: o.student_location,
+  topic: o.topic,
+  pages: o.pages,
+  studentPaid: Number(o.student_paid),
+  writerPayout: Number(o.writer_payout),
+  utr: o.utr,
+  writerPhone: o.writer_phone,
+  writerDetails: o.writer_name
+    ? {
+        name: o.writer_name,
+        phone: o.writer_phone,
+        upi: o.writer_upi,
+        location: o.writer_location
+      }
+    : null,
+  status: o.status,
+  adminApproved: o.admin_approved,
+  studentApproved: o.student_approved,
+  payoutClaimed: o.payout_claimed,
+  createdAt: o.created_at
+}));
   console.log("Orders loaded from Supabase:", window.globalOrders);
 }
 loadOrdersFromSupabase();
