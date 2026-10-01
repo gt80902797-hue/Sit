@@ -335,68 +335,146 @@ window.showWriterDashboard = function() {
   window.renderWriterMarketplace();
 };
 
-window.renderWriterMarketplace = function() {
+
+window.renderWriterMarketplace = async function() {
   const openOrdersDiv = document.getElementById("writerOrdersList");
   const myAssignedDiv = document.getElementById("writerMyOrdersList");
 
   if (!openOrdersDiv || !myAssignedDiv) return;
 
-  openOrdersDiv.innerHTML = "";
+  openOrdersDiv.innerHTML = "<p>Loading orders...</p>";
   myAssignedDiv.innerHTML = "";
+
+  // Fresh data Supabase se load karo
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Writer marketplace load error:", error);
+    openOrdersDiv.innerHTML =
+      "<p>Orders load nahi ho paaye: " + error.message + "</p>";
+    return;
+  }
+
+  // Supabase data ko frontend format me convert karo
+  window.globalOrders = (data || []).map(o => ({
+    id: o.id,
+    code: o.code,
+    secretUniqueCode: o.secret_unique_code,
+    studentPhone: o.student_phone,
+    studentLocation: o.student_location,
+    topic: o.topic,
+    pages: o.pages,
+    studentPaid: Number(o.student_paid),
+    writerPayout: Number(o.writer_payout),
+    utr: o.utr,
+    writerPhone: o.writer_phone,
+    writerDetails: o.writer_name
+      ? {
+          name: o.writer_name,
+          phone: o.writer_phone,
+          upi: o.writer_upi,
+          location: o.writer_location
+        }
+      : null,
+    status: o.status,
+    adminApproved: o.admin_approved,
+    studentApproved: o.student_approved,
+    payoutClaimed: o.payout_claimed,
+    createdAt: o.created_at
+  }));
 
   const activeWriterPhone = window.activeWriterPhone;
 
-  window.globalOrders.forEach(order => {
-    if (order.adminApproved) {
-      if (!order.writerDetails) {
-        const orderCard = document.createElement("div");
-        orderCard.className = "order-item";
-        orderCard.innerHTML = `
-          <div class="order-top">
-            <span class="code-tag">${order.code}</span>
-            <span class="status-tag">${order.status}</span>
-          </div>
-          <p><strong>Topic:</strong> ${order.topic} (${order.pages} Pages)</p>
-          <p><strong>Writer Payout:</strong> ₹${order.writerPayout}</p>
-          <p><strong>Student Location:</strong> ${order.studentLocation}</p>
-          <button type="button" class="action-btn success" style="margin-top:10px;" onclick="window.claimOrder('${order.code}')">Claim Assignment</button>
-        `;
-        openOrdersDiv.appendChild(orderCard);
-      } else if (order.writerDetails && order.writerDetails.phone === activeWriterPhone) {
-        const orderCard = document.createElement("div");
-        orderCard.className = "order-item";
-        
-        let statusText = order.studentApproved ? '<span style="color:var(--accent); font-weight:bold;">✔ Student Approved</span>' : '<span style="color:#f59e0b; font-weight:bold;">⏳ Pending Student Confirmation</span>';
-        
-        let payoutBtnHTML = "";
-        if (order.studentApproved) {
-          payoutBtnHTML = '<button type="button" class="action-btn success" style="margin-top:10px; background:#10b981;" onclick="window.claimWriterPayout(\'' + order.code + '\')">💬 Claim Payout via WhatsApp</button>';
-        }
+  openOrdersDiv.innerHTML = "";
+  myAssignedDiv.innerHTML = "";
 
-        orderCard.innerHTML = `
-          <div class="order-top">
-            <span class="code-tag">${order.code}</span>
-            <span class="status-tag">${order.status}</span>
-          </div>
-          <p><strong>Topic:</strong> ${order.topic} (${order.pages} Pages)</p>
-          <p><strong>Writer Payout:</strong> ₹${order.writerPayout}</p>
-          <p><strong>Student Location:</strong> ${order.studentLocation}</p>
-          <p style="margin-top:8px;"><strong>Status:</strong> ${statusText}</p>
-          ${payoutBtnHTML}
-        `;
-        myAssignedDiv.appendChild(orderCard);
+  window.globalOrders.forEach(order => {
+
+    // Sirf Admin-approved aur unclaimed orders marketplace me dikhenge
+    if (order.adminApproved && !order.writerDetails) {
+
+      const orderCard = document.createElement("div");
+      orderCard.className = "order-item";
+
+      orderCard.innerHTML = `
+        <div class="order-top">
+          <span class="code-tag">${order.code}</span>
+          <span class="status-tag">${order.status}</span>
+        </div>
+
+        <p><strong>Topic:</strong> ${order.topic} (${order.pages} Pages)</p>
+        <p><strong>Writer Payout:</strong> ₹${order.writerPayout}</p>
+        <p><strong>Student Location:</strong> ${order.studentLocation}</p>
+
+        <button
+          type="button"
+          class="action-btn success"
+          style="margin-top:10px;"
+          onclick="window.claimOrder('${order.code}')"
+        >
+          Claim Assignment
+        </button>
+      `;
+
+      openOrdersDiv.appendChild(orderCard);
+    }
+
+    // Current writer ke claimed orders
+    else if (
+      order.writerDetails &&
+      order.writerDetails.phone === activeWriterPhone
+    ) {
+
+      const orderCard = document.createElement("div");
+      orderCard.className = "order-item";
+
+      let statusText = order.studentApproved
+        ? '<span style="color:var(--accent); font-weight:bold;">✔ Student Approved</span>'
+        : '<span style="color:#f59e0b; font-weight:bold;">⏳ Pending Student Confirmation</span>';
+
+      let payoutBtnHTML = "";
+
+      if (order.studentApproved) {
+        payoutBtnHTML =
+          '<button type="button" class="action-btn success" style="margin-top:10px; background:#10b981;" onclick="window.claimWriterPayout(\'' +
+          order.code +
+          '\')">💬 Claim Payout via WhatsApp</button>';
       }
+
+      orderCard.innerHTML = `
+        <div class="order-top">
+          <span class="code-tag">${order.code}</span>
+          <span class="status-tag">${order.status}</span>
+        </div>
+
+        <p><strong>Topic:</strong> ${order.topic} (${order.pages} Pages)</p>
+        <p><strong>Writer Payout:</strong> ₹${order.writerPayout}</p>
+        <p><strong>Student Location:</strong> ${order.studentLocation}</p>
+
+        <p style="margin-top:8px;">
+          <strong>Status:</strong> ${statusText}
+        </p>
+
+        ${payoutBtnHTML}
+      `;
+
+      myAssignedDiv.appendChild(orderCard);
     }
   });
 
   if (openOrdersDiv.innerHTML === "") {
-    openOrdersDiv.innerHTML = "<p>Koi bhi approved marketplace order available nahi hai.</p>";
+    openOrdersDiv.innerHTML =
+      "<p>Koi bhi approved marketplace order available nahi hai.</p>";
   }
+
   if (myAssignedDiv.innerHTML === "") {
-    myAssignedDiv.innerHTML = "<p>Aapne abhi tak koi order claim nahi kiya hai.</p>";
+    myAssignedDiv.innerHTML =
+      "<p>Aapne abhi tak koi order claim nahi kiya hai.</p>";
   }
 };
-
 window.claimOrder = async function(code) {
   const writerInfo = window.registeredWriters[window.activeWriterPhone];
 
