@@ -5,6 +5,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
+console.log("Supabase connected:", !!supabaseClient);
 window.ADMIN_WHATSAPP = "918090279768";
 window.ADMIN_SECRET_CODE = "10062009";
 window.ADMIN_PASSWORD = "admin123";
