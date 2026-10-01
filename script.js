@@ -397,24 +397,45 @@ window.renderWriterMarketplace = function() {
   }
 };
 
-window.claimOrder = function(code) {
+window.claimOrder = async function(code) {
   const writerInfo = window.registeredWriters[window.activeWriterPhone];
-  
+
   if (!writerInfo || !writerInfo.name || writerInfo.upi === "Not Provided" || writerInfo.location === "Not Provided") {
-    alert("⚠️ Error: Assignment claim karne se pehle apni Profile Details (Full Name, UPI ID aur Location) bharna aur save karna compulsory hai!");
+    alert("⚠️ Error: Assignment claim karne se pehle apni Profile Details (Full Name, UPI ID aur Location) bharna compulsory hai!");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .update({
+      writer_phone: window.activeWriterPhone,
+      writer_name: writerInfo.name,
+      writer_upi: writerInfo.upi,
+      writer_location: writerInfo.location,
+      status: "Assigned to Writer"
+    })
+    .eq("code", code)
+    .is("writer_phone", null)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Claim error:", error);
+    alert("Assignment claim nahi hua: " + error.message);
     return;
   }
 
   const index = window.globalOrders.findIndex(o => o.code === code);
-  if (index !== -1) {
-    window.globalOrders[index].writerDetails = writerInfo;
-    window.globalOrders[index].status = "Assigned to Writer";
-    localStorage.setItem("assignmate_master_orders", JSON.stringify(window.globalOrders));
-    alert("Assignment successfully claim ho gaya hai!");
-    window.renderWriterMarketplace();
-  }
-};
 
+  if (index !== -1) {
+    window.globalOrders[index].writerPhone = data.writer_phone;
+    window.globalOrders[index].writerDetails = writerInfo;
+    window.globalOrders[index].status = data.status;
+  }
+
+  alert("Assignment successfully claim ho gaya hai!");
+  window.renderWriterMarketplace();
+};
 window.claimWriterPayout = function(code) {
   const order = window.globalOrders.find(o => o.code === code);
   if (!order) return;
