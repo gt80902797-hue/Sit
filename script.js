@@ -53,6 +53,7 @@ window.globalOrders = (data || []).map(o => ({
   console.log("Orders loaded from Supabase:", window.globalOrders);
 }
 loadOrdersFromSupabase();
+window.renderStudentOrders();
 window.registeredWriters = JSON.parse(localStorage.getItem("assignmate_registered_writers")) || {};
 
 window.activeStudentPhone = localStorage.getItem("assignmate_active_student") || null;
