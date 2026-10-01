@@ -13,6 +13,21 @@ window.STUDENT_RATE_PER_PAGE = 20;
 window.WRITER_RATE_PER_PAGE = 14;
 
 window.globalOrders = JSON.parse(localStorage.getItem("assignmate_master_orders")) || [];
+async function loadOrdersFromSupabase() {
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Supabase orders error:", error);
+    return;
+  }
+
+  window.globalOrders = data || [];
+  console.log("Orders loaded from Supabase:", window.globalOrders);
+}
+loadOrdersFromSupabase();
 window.registeredWriters = JSON.parse(localStorage.getItem("assignmate_registered_writers")) || {};
 
 window.activeStudentPhone = localStorage.getItem("assignmate_active_student") || null;
