@@ -556,23 +556,45 @@ window.claimOrder = async function(code) {
   alert("Assignment successfully claim ho gaya hai!");
   window.renderWriterMarketplace();
 };
-window.claimWriterPayout = function(code) {
+window.claimWriterPayout = async function(code) {
   const order = window.globalOrders.find(o => o.code === code);
-  if (!order) return;
+  if (!order) {
+    alert("Order nahi mila.");
+    return;
+  }
 
-  const writerInfo = window.registeredWriters[window.activeWriterPhone] || {};
+  const activePhone = window.activeWriterPhone;
 
-  const msg = "Hello Admin, Maine assignment successfully deliver kar diya hai aur student ne approve bhi kar diya hai.%0A%0A" +
-    "*Order Code:* " + order.code + "%0A" +
-    "*Unique Code:* " + order.secretUniqueCode + "%0A" +
-    "*Topic:* " + order.topic + "%0A" +
-    "*Total Payout Amount:* ₹" + order.writerPayout + "%0A" +
-    "*Writer Name:* " + writerInfo.name + "%0A" +
-    "*Writer UPI ID:* " + writerInfo.upi + "%0A" +
-    "*Writer Phone:* " + writerInfo.phone + "%0A%0A" +
+  // Check: kya ye wahi writer hai jisne order accept kiya tha?
+  if (!activePhone || order.writerPhone !== activePhone) {
+    alert("⚠️ Aap is assignment ka payout claim nahi kar sakte. Ye assignment kisi aur writer ko assigned hai.");
+    return;
+  }
+
+  // Check: student ne assignment approve kiya hai ya nahi
+  if (order.studentApproved !== true) {
+    alert("⚠️ Student ne abhi assignment approve nahi kiya hai.");
+    return;
+  }
+
+  const writerInfo =
+    window.registeredWriters[activePhone] || {};
+
+  const msg =
+    "Hello Admin, Maine assignment successfully deliver kar diya hai aur student ne approve bhi kar diya hai.%0A%0A" +
+    "*Order Code:* " + encodeURIComponent(order.code) + "%0A" +
+    "*Unique Code:* " + encodeURIComponent(order.secretUniqueCode || "") + "%0A" +
+    "*Topic:* " + encodeURIComponent(order.topic || "") + "%0A" +
+    "*Total Payout Amount:* ₹" + encodeURIComponent(order.writerPayout || "") + "%0A" +
+    "*Writer Name:* " + encodeURIComponent(writerInfo.name || "") + "%0A" +
+    "*Writer UPI ID:* " + encodeURIComponent(writerInfo.upi || "") + "%0A" +
+    "*Writer Phone:* " + encodeURIComponent(activePhone) + "%0A%0A" +
     "Kripya mera payout transfer karein.";
 
-  window.open("https://wa.me/" + window.ADMIN_WHATSAPP + "?text=" + msg, '_blank');
+  window.open(
+    "https://wa.me/" + window.ADMIN_WHATSAPP + "?text=" + msg,
+    "_blank"
+  );
 };
 
 window.logoutWriter = function() {
