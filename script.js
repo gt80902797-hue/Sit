@@ -503,6 +503,22 @@ window.claimOrder = async function(code) {
     return;
   }
 
+  // WhatsApp notification to Admin
+  const msg =
+    "Hello Admin, ek writer ne assignment accept kiya hai.%0A%0A" +
+    "*Order Code:* " + encodeURIComponent(data.code) + "%0A" +
+    "*Topic:* " + encodeURIComponent(data.topic || "") + "%0A" +
+    "*Writer Name:* " + encodeURIComponent(data.writer_name) + "%0A" +
+    "*Writer Phone:* " + encodeURIComponent(data.writer_phone) + "%0A" +
+    "*Writer UPI:* " + encodeURIComponent(data.writer_upi) + "%0A" +
+    "*Writer Location:* " + encodeURIComponent(data.writer_location) + "%0A%0A" +
+    "Assignment successfully accept kar liya gaya hai.";
+
+  window.open(
+    "https://wa.me/" + window.ADMIN_WHATSAPP + "?text=" + msg,
+    "_blank"
+  );
+
   const index = window.globalOrders.findIndex(o => o.code === code);
 
   if (index !== -1) {
