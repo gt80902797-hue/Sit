@@ -293,7 +293,6 @@ window.confirmStudentApproval = async function(code) {
     return;
   }
 
-  // Supabase mein approval save karo
   const { data, error } = await supabaseClient
     .from("orders")
     .update({
@@ -310,7 +309,6 @@ window.confirmStudentApproval = async function(code) {
     return;
   }
 
-  // Local data bhi update karo
   window.globalOrders[index].studentApproved = true;
   window.globalOrders[index].status = "Completed & Student Approved";
 
