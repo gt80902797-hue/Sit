@@ -561,6 +561,7 @@ window.claimOrder = async function(code) {
 };
 window.claimWriterPayout = async function(code) {
   const order = window.globalOrders.find(o => o.code === code);
+
   if (!order) {
     alert("Order nahi mila.");
     return;
@@ -568,20 +569,50 @@ window.claimWriterPayout = async function(code) {
 
   const activePhone = window.activeWriterPhone;
 
-  // Check: kya ye wahi writer hai jisne order accept kiya tha?
+  // Sirf wahi writer claim kar sakta hai jisne order accept kiya tha
   if (!activePhone || order.writerPhone !== activePhone) {
     alert("⚠️ Aap is assignment ka payout claim nahi kar sakte. Ye assignment kisi aur writer ko assigned hai.");
     return;
   }
 
-  // Check: student ne assignment approve kiya hai ya nahi
+  // Student approval compulsory
   if (order.studentApproved !== true) {
     alert("⚠️ Student ne abhi assignment approve nahi kiya hai.");
     return;
   }
 
-  const writerInfo =
-    window.registeredWriters[activePhone] || {};
+  // Already claimed check
+  if (order.payoutClaimed === true) {
+    alert("⚠️ Is order ka payout request pehle hi bheja ja chuka hai.");
+    return;
+  }
+
+  const writerInfo = window.registeredWriters[activePhone] || {};
+
+  // IMPORTANT:
+  // Supabase me pehle payout_claimed = true set hoga.
+  // Sirf wahi order update hoga jo isi writer ka hai
+  // aur abhi claimed nahi hai.
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .update({
+      payout_claimed: true
+    })
+    .eq("code", code)
+    .eq("writer_phone", activePhone)
+    .eq("student_approved", true)
+    .eq("payout_claimed", false)
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Payout claim error:", error);
+    alert("⚠️ Payout request already claim ho chuka hai ya request process nahi hui.");
+    return;
+  }
+
+  // Local data update
+  order.payoutClaimed = true;
 
   const msg =
     "Hello Admin, Maine assignment successfully deliver kar diya hai aur student ne approve bhi kar diya hai.%0A%0A" +
@@ -598,6 +629,10 @@ window.claimWriterPayout = async function(code) {
     "https://wa.me/" + window.ADMIN_WHATSAPP + "?text=" + msg,
     "_blank"
   );
+
+  alert("✅ Payout request Admin ko bhej di gayi hai. Is order ke liye dobara claim nahi kiya ja sakta.");
+
+  window.renderWriterMarketplace();
 };
 
 window.logoutWriter = function() {
