@@ -285,15 +285,43 @@ window.renderStudentOrders = function() {
   });
 };
 
-window.confirmStudentApproval = function(code) {
+window.confirmStudentApproval = async function(code) {
   const index = window.globalOrders.findIndex(o => o.code === code);
-  if (index !== -1) {
-    window.globalOrders[index].studentApproved = true;
-    window.globalOrders[index].status = "Completed & Student Approved";
-    localStorage.setItem("assignmate_master_orders", JSON.stringify(window.globalOrders));
-    alert("Confirmation Received! Ab Writer Payout Claim Kar Sakta Hai.");
-    window.renderStudentOrders();
+
+  if (index === -1) {
+    alert("Order nahi mila.");
+    return;
   }
+
+  // Supabase mein approval save karo
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .update({
+      student_approved: true,
+      status: "Completed & Student Approved"
+    })
+    .eq("code", code)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Student approval error:", error);
+    alert("Approval save nahi hua: " + error.message);
+    return;
+  }
+
+  // Local data bhi update karo
+  window.globalOrders[index].studentApproved = true;
+  window.globalOrders[index].status = "Completed & Student Approved";
+
+  localStorage.setItem(
+    "assignmate_master_orders",
+    JSON.stringify(window.globalOrders)
+  );
+
+  alert("Confirmation Received! Ab Writer Payout Claim Kar Sakta Hai.");
+
+  window.renderStudentOrders();
 };
 window.saveWriterProfile = function(e) {
   if (e) e.preventDefault();
