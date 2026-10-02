@@ -463,11 +463,14 @@ window.renderWriterMarketplace = async function() {
 
       let payoutBtnHTML = "";
 
-      if (order.studentApproved) {
-        payoutBtnHTML =
-          '<button type="button" class="action-btn success" style="margin-top:10px; background:#10b981;" onclick="window.claimWriterPayout(\'' +
-          order.code +
-          '\')">💬 Claim Payout via WhatsApp</button>';
+      if (order.studentApproved && !order.payoutClaimed) {
+  payoutBtnHTML =
+    '<button type="button" class="action-btn success" style="margin-top:10px; background:#10b981;" onclick="window.claimWriterPayout(\'' +
+    order.code +
+    '\')">💬 Claim Payout via WhatsApp</button>';
+} else if (order.payoutClaimed) {
+  payoutBtnHTML =
+    '<p style="color:#22c55e; font-weight:bold; margin-top:10px;">✔ Payout Request Already Sent</p>';
       }
 
       orderCard.innerHTML = `
