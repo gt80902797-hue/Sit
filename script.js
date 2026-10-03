@@ -99,7 +99,7 @@ window.sendStudentOTP = function() {
   const phoneInput = document.getElementById("studentPhone");
   if (!phoneInput) return;
   const phone = phoneInput.value.trim();
-  if (phone.length < 10) return alert("Kripya sahi 10-digit mobile number daalein.");
+  if (phone.length < 10) return alert("Please write 10 digit unique code.");
 
   window.generatedStudentOTP = "1234";
   const otpBox = document.getElementById("student-otp-box");
