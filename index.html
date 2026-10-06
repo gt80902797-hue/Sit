@@ -30,23 +30,25 @@
   </div>
 
   <!-- STUDENT PORTAL -->
-  <div id="student-portal">
-    <div id="student-auth" class="auth-card">
-      <h3>Student Sign In / Sign Up</h3>
-      <div class="form-group">
-        <label>Unique code of 10 digit:</label>
-        <input type="tel" id="studentPhone" placeholder="10-digit Your unique code" maxlength="10">
-      </div>
-      <button type="button" onclick="sendStudentOTP()">Send OTP</button>
+  <div id="student-auth" class="auth-card">
+  <h3>Student Sign In</h3>
 
-      <div id="student-otp-box" class="otp-box">
-        <div class="form-group">
-          <label>Enter Verification Code (OTP):</label>
-          <input type="text" id="studentOtpCode" placeholder="Enter 1234">
-        </div>
-        <button type="button" class="action-btn success" onclick="verifyStudentOTP()">Verify & Login</button>
-      </div>
-    </div>
+  <div class="form-group">
+    <label>Enter Your 10-Digit Unique Code:</label>
+    <input
+      type="tel"
+      id="studentPhone"
+      placeholder="Enter 10-digit Unique Code"
+      maxlength="10"
+      inputmode="numeric"
+      required
+    >
+  </div>
+
+  <button type="button" onclick="loginStudentWithCode()">
+    Sign In
+  </button>
+  </div>
 
     <div id="student-dashboard" class="dashboard-box">
       <button type="button" class="logout-btn" onclick="logoutStudent()">Logout</button>
