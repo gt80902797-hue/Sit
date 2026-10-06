@@ -95,33 +95,22 @@ window.calculateCost = function(pages) {
   }
 };
 
-window.sendStudentOTP = function() {
+window.loginStudentWithCode = function() {
   const phoneInput = document.getElementById("studentPhone");
+
   if (!phoneInput) return;
-  const phone = phoneInput.value.trim();
-  if (phone.length < 10) return alert("Please write 10 digit unique code.");
 
-  window.generatedStudentOTP = "1234";
-  const otpBox = document.getElementById("student-otp-box");
-  if (otpBox) otpBox.style.display = "block";
-  alert("Verification Code Mobile Number " + phone + " par bhej diya gaya hai.\nDemo OTP Code: 1234");
-};
+  const code = phoneInput.value.trim();
 
-window.verifyStudentOTP = function() {
-  const phoneInput = document.getElementById("studentPhone");
-  const otpInput = document.getElementById("studentOtpCode");
-  if (!phoneInput || !otpInput) return;
-
-  const phone = phoneInput.value.trim();
-  const otp = otpInput.value.trim();
-
-  if (otp === window.generatedStudentOTP || otp === "1234") {
-    window.activeStudentPhone = phone;
-    localStorage.setItem("assignmate_active_student", phone);
-    window.showStudentDashboard();
-  } else {
-    alert("Galat OTP! Kripya sahi code enter karein.");
+  if (!/^\d{10}$/.test(code)) {
+    alert("Please enter a valid 10-digit Unique Code.");
+    return;
   }
+
+  window.activeStudentPhone = code;
+  localStorage.setItem("assignmate_active_student", code);
+
+  window.showStudentDashboard();
 };
 
 window.logoutStudent = function() {
