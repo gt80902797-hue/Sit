@@ -93,7 +93,26 @@
 
   <!-- WRITER PORTAL -->
   <!-- WRITER PORTAL -->
-<div id="writer-portal" class="portal-hidden">
+div id="writer-portal" class="portal-hidden">
+  <div id="writer-auth" class="auth-card">
+  <h3>Writer Sign In</h3>
+
+  <div class="form-group">
+    <label>Enter Your 10-Digit Unique Code:</label>
+    <input
+      type="tel"
+      id="writerPhoneInput"
+      placeholder="Enter 10-digit Unique Code"
+      maxlength="10"
+      inputmode="numeric"
+      required
+    >
+  </div>
+
+  <button type="button" onclick="loginWriterWithCode()">
+    Sign In
+  </button>
+  </div>
 
     <div id="writer-dashboard" class="dashboard-box">
       <button type="button" class="logout-btn" onclick="logoutWriter()">Logout</button>
