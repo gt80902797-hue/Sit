@@ -92,16 +92,8 @@
   </div>
 
   <!-- WRITER PORTAL -->
-  window.loginWriterWithCode = async function () {
-  const code = document.getElementById("writerPhoneInput").value.trim();
-
-  if (!/^\d{10}$/.test(code)) {
-    alert("Please enter a valid 10-digit Unique Code.");
-    return;
-  }
-
-  // Yahan tumhara existing writer login/database logic use hoga
-};
+  <!-- WRITER PORTAL -->
+<div id="writer-portal" class="portal-hidden">
 
     <div id="writer-dashboard" class="dashboard-box">
       <button type="button" class="logout-btn" onclick="logoutWriter()">Logout</button>
