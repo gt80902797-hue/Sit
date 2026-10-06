@@ -134,44 +134,37 @@ window.showStudentDashboard = function() {
   window.renderStudentOrders();
 };
 
-window.sendWriterOTP = function() {
+window.loginWriterWithCode = function() {
   const phoneInput = document.getElementById("writerPhoneInput");
+
   if (!phoneInput) return;
-  const phone = phoneInput.value.trim();
-  if (phone.length < 10) return alert("Kripya sahi 10-digit mobile number daalein.");
 
-  window.generatedWriterOTP = "1234";
-  const otpBox = document.getElementById("writer-otp-box");
-  if (otpBox) otpBox.style.display = "block";
-  alert("Writer Verification Code Mobile Number " + phone + " par bhej diya gaya hai.\nDemo OTP Code: 1234");
-};
+  const code = phoneInput.value.trim();
 
-window.verifyWriterOTP = function() {
-  const phoneInput = document.getElementById("writerPhoneInput");
-  const otpInput = document.getElementById("writerOtpCode");
-  if (!phoneInput || !otpInput) return;
-
-  const phone = phoneInput.value.trim();
-  const otp = otpInput.value.trim();
-
-  if (otp === window.generatedWriterOTP || otp === "1234") {
-    window.activeWriterPhone = phone;
-    localStorage.setItem("assignmate_active_writer_phone", phone);
-    
-    if (!window.registeredWriters[phone]) {
-      window.registeredWriters[phone] = {
-        name: "",
-        phone: phone,
-        upi: "Not Provided",
-        location: "Not Provided"
-      };
-      localStorage.setItem("assignmate_registered_writers", JSON.stringify(window.registeredWriters));
-    }
-
-    window.showWriterDashboard();
-  } else {
-    alert("Galat OTP! Kripya sahi code enter karein.");
+  if (!/^\d{10}$/.test(code)) {
+    alert("Please enter a valid 10-digit Unique Code.");
+    return;
   }
+
+  window.activeWriterPhone = code;
+  localStorage.setItem("assignmate_active_writer_phone", code);
+
+  // Agar writer pehli baar login kar raha hai
+  if (!window.registeredWriters[code]) {
+    window.registeredWriters[code] = {
+      name: "",
+      phone: code,
+      upi: "Not Provided",
+      location: "Not Provided"
+    };
+
+    localStorage.setItem(
+      "assignmate_registered_writers",
+      JSON.stringify(window.registeredWriters)
+    );
+  }
+
+  window.showWriterDashboard();
 };
 window.createStudentOrder = async function(e) {
   if (e) e.preventDefault();
